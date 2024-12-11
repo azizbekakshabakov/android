@@ -35,7 +35,7 @@ class CarsActivity : ComponentActivity() {
             CarsScreen()
         }
 
-        apiService = ApiClient.getRetrofitInstance().create(ApiService::class.java)
+        apiService = ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
 
         // Fetch the cars from the API
         fetchCars()

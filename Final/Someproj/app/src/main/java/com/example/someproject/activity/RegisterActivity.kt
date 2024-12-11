@@ -80,7 +80,7 @@ class RegisterActivity : ComponentActivity() {
     private fun registerUser(email: String, password: String) {
         val registerRequest = RegisterRequest(email, password, "user")
 
-        ApiClient.getRetrofitInstance().create(ApiService::class.java)
+        ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
             .register(registerRequest)
             .enqueue(object : Callback<RegisterResponse> {
                 override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {

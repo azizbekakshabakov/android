@@ -1,5 +1,6 @@
 package com.example.someproject.activity
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -16,6 +17,8 @@ import coil.compose.rememberImagePainter
 import com.example.someproject.service.ApiClient
 import com.example.someproject.service.ApiService
 import com.example.someproject.model.Car
+import com.example.someproject.model.RentRequest
+import com.example.someproject.model.RentResponse
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,7 +38,7 @@ class CarDetailsActivity : ComponentActivity() {
         carId = intent.getStringExtra("carId") ?: ""
 
         // Initialize API service
-        apiService = ApiClient.getRetrofitInstance().create(ApiService::class.java)
+        apiService = ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
 
         // Fetch car details from the API
         if (carId.isNotEmpty()) {
@@ -109,10 +112,27 @@ class CarDetailsActivity : ComponentActivity() {
     }
 
     private fun rentCar(car: Car) {
-        // Implement rent functionality here
-        // Example: You could show a Toast message or call an API to rent the car
-        Toast.makeText(this, "Renting car: ${car.name}", Toast.LENGTH_SHORT).show()
+        val sharedPreferences = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("jwt_token", null)
 
-        // You can also make a network call to rent the car if needed
+        val request = RentRequest(car._id)
+        apiService.rentCar(request, token).enqueue(object : Callback<RentResponse> {
+            override fun onResponse(call: Call<RentResponse>, response: Response<RentResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { rentResponse ->
+                        Toast.makeText(this@CarDetailsActivity, rentResponse.message, Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Failed to rent car"
+                    Toast.makeText(this@CarDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<RentResponse>, t: Throwable) {
+                Toast.makeText(this@CarDetailsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.println(Log.INFO, "Rent fail", "Rent fail: ${t.message}")
+            }
+        })
     }
+
 }

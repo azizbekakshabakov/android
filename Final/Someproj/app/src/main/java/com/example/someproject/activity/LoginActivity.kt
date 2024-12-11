@@ -90,7 +90,7 @@ class LoginActivity : ComponentActivity() {
     private fun loginUser(email: String, password: String) {
         val loginRequest = LoginRequest(email, password)
 
-        ApiClient.getRetrofitInstance().create(ApiService::class.java)
+        ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
             .login(loginRequest)
             .enqueue(object : Callback<LoginResponse> {
                 override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {

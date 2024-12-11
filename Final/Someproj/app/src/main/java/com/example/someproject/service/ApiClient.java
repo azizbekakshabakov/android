@@ -2,6 +2,7 @@ package com.example.someproject.service;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -28,7 +29,7 @@ public class ApiClient {
                             Request.Builder requestBuilder = originalRequest.newBuilder();
 
                             // Retrieve the JWT token from SharedPreferences
-                            SharedPreferences sharedPreferences = context.getSharedPreferences("my_prefs", Context.MODE_PRIVATE);
+                            SharedPreferences sharedPreferences = context.getSharedPreferences("myPrefs", Context.MODE_PRIVATE);
                             String token = sharedPreferences.getString("jwt_token", null);
 
                             if (token != null) {
