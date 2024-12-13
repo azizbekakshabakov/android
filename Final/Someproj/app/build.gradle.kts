@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.converterGson)
     implementation(libs.loggingInterceptor)
     implementation(libs.roomRuntime)
+    implementation(libs.androidx.navigation.compose)
     annotationProcessor(libs.roomCompiler)
     implementation(libs.lifecycleViewmodelKtx)
     implementation(libs.lifecycleLivedataKtx)

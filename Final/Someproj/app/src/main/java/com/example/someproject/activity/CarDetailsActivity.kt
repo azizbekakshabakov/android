@@ -1,18 +1,26 @@
 package com.example.someproject.activity
 
-import android.content.Context
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.example.someproject.service.ApiClient
@@ -26,27 +34,23 @@ import retrofit2.Response
 
 class CarDetailsActivity : ComponentActivity() {
 
-    private lateinit var linearLayout: LinearLayout
     private lateinit var apiService: ApiService
+    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var carId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        linearLayout = LinearLayout(this)
-        linearLayout.orientation = LinearLayout.VERTICAL
+        setContent {
+            CarDetailsScreen()
+        }
 
-        // Get the car ID passed from the previous activity
         carId = intent.getStringExtra("carId") ?: ""
 
-        // Initialize API service
+        // Initialize the API service
         apiService = ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
+        sharedPreferences = getSharedPreferences("myPrefs", MODE_PRIVATE)
 
-        // Fetch car details from the API
-        if (carId.isNotEmpty()) {
-            fetchCarDetails(carId)
-        } else {
-            Toast.makeText(this, "Car ID not found", Toast.LENGTH_SHORT).show()
-        }
+        fetchCarDetails(carId)
     }
 
     private fun fetchCarDetails(carId: String) {
@@ -55,10 +59,11 @@ class CarDetailsActivity : ComponentActivity() {
                 if (response.isSuccessful) {
                     val car = response.body()
 
-
                     car?.let {
-                        // Display car details if the response is successful
-                        displayCarDetails(it)
+                        // If car details are found, display using Compose
+                        setContent {
+                            CarDetailsScreen(car = it)
+                        }
                     } ?: run {
                         Toast.makeText(this@CarDetailsActivity, "Car details not found", Toast.LENGTH_SHORT).show()
                     }
@@ -73,43 +78,114 @@ class CarDetailsActivity : ComponentActivity() {
         })
     }
 
-    private fun displayCarDetails(car: Car) {
-        // Create TextViews to display car details
-        val carNameTextView = TextView(this)
-        carNameTextView.text = "Name: ${car.name}, Tariff: ${car.tariff}$/день"
-        carNameTextView.textSize = 22f
+    @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+    @Composable
+    fun CarDetailsScreen(car: Car? = null) {
+        val jwtTokenExists = remember { mutableStateOf(sharedPreferences.contains("jwt_token")) }
 
-        val imageView = androidx.compose.ui.platform.ComposeView(this).apply {
-            setContent {
-                Image(
-                    painter = rememberImagePainter("http://10.0.2.2:3000/${car.image}"),
-                    contentDescription = "Car Image",
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            content = {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                )
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Car name and tariff
+                    if (car != null) {
+                        Text(
+                            text = "Name: ${car.name}, Tariff: ${car.tariff}$ / day",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.Black
+                        )
+
+                        // Car image
+                        val carImage = rememberImagePainter("http://10.0.2.2:3000/${car.image}")
+                        Image(
+                            painter = carImage,
+                            contentDescription = "Car Image",
+                            modifier = Modifier
+                                .height(200.dp)
+                                .fillMaxWidth()
+                                .padding(top = 16.dp)
+                        )
+
+                        // Car description
+                        Text(
+                            text = "Description: ${car.description}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = 16.dp),
+                            color = Color.Gray
+                        )
+
+                        // Rent button
+                        Button(
+                            onClick = { rentCar(car) },
+                            modifier = Modifier.padding(top = 24.dp)
+                        ) {
+                            Text(text = "Rent")
+                        }
+
+                    }
+                }
+            },
+            bottomBar = {
+                NavigationBar  {
+                    if (jwtTokenExists.value) {
+                        NavigationBarItem(
+                            icon = { Text(text = "Cars") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@CarDetailsActivity, CarsActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Rents") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@CarDetailsActivity, RentsActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Logout") },
+                            selected = false,
+                            onClick = {
+                                val editor = sharedPreferences.edit()
+                                editor.remove("jwt_token")
+                                editor.apply()
+                                jwtTokenExists.value = false
+
+                                startActivity(Intent(this@CarDetailsActivity, LoginActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+                    } else {
+                        NavigationBarItem(
+                            icon = { Text(text = "Register") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@CarDetailsActivity, RegisterActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Login") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@CarDetailsActivity, LoginActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+                    }
+                }
             }
-        }
-
-        val carDescriptionTextView = TextView(this)
-        carDescriptionTextView.text = "Description: ${car.description}"
-        carDescriptionTextView.textSize = 18f
-
-        // Create a button to rent the car
-        val rentButton = Button(this)
-        rentButton.text = "Rent"
-        rentButton.setOnClickListener {
-            rentCar(car)
-        }
-
-        // Add views to the layout
-        linearLayout.addView(carNameTextView)
-        linearLayout.addView(imageView)
-        linearLayout.addView(carDescriptionTextView)
-        linearLayout.addView(rentButton)
-
-        // Set the dynamically created layout to the activity
-        setContentView(linearLayout)
+        )
     }
 
     private fun rentCar(car: Car) {
@@ -119,6 +195,7 @@ class CarDetailsActivity : ComponentActivity() {
                 if (response.isSuccessful) {
                     response.body()?.let { rentResponse ->
                         Toast.makeText(this@CarDetailsActivity, rentResponse.message, Toast.LENGTH_SHORT).show()
+                        // Navigate to the rents activity
                         val intent = Intent(this@CarDetailsActivity, RentsActivity::class.java)
                         startActivity(intent)
                     }
@@ -130,9 +207,7 @@ class CarDetailsActivity : ComponentActivity() {
 
             override fun onFailure(call: Call<RentResponse>, t: Throwable) {
                 Toast.makeText(this@CarDetailsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                Log.println(Log.INFO, "Rent fail", "Rent fail: ${t.message}")
             }
         })
     }
-
 }

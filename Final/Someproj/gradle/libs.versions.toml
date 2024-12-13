@@ -16,6 +16,7 @@ lifecycle = "2.5.0"
 material = "1.8.0"
 glide = "4.13.0"
 coil-compose = "2.3.0"
+navigationCompose = "2.8.5"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,7 @@ material = { module = "com.google.android.material:material", version.ref = "mat
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glideCompiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 coilCompose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil-compose" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
