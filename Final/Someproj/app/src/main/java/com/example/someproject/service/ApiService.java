@@ -9,11 +9,13 @@ import com.example.someproject.model.LoginResponse;
 import com.example.someproject.model.RegisterRequest;
 import com.example.someproject.model.RegisterResponse;
 import com.example.someproject.model.Rent;
+import com.example.someproject.model.RentGetResponse;
 import com.example.someproject.model.RentRequest;
 import com.example.someproject.model.RentResponse;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.http.Body;
@@ -38,13 +40,13 @@ public interface ApiService {
     Call<Car> getCar(@Path("id") String carId);
 
     @POST("/rent/")
-    Call<RentResponse> rentCar(@Body RentRequest request, @Header("x-auth-token") String token);
+    Call<RentResponse> rentCar(@Body RentRequest request);
 
     @GET("/rent/")
-    Call<List<Rent>> getRents();
+    Call<RentGetResponse> getRents();
 
     @DELETE("/rent/{id}")
-    Call<Response> removeRent(@Path("id") String rentId);
+    Call<ResponseBody> removeRent(@Path("id") String rentId);
 
     @POST("/rent/balance")
     Call<Response> addBalance(@Body BalanceRequest request);

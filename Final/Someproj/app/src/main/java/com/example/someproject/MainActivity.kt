@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.example.someproject.activity.CarsActivity
 import com.example.someproject.activity.LoginActivity
 import com.example.someproject.activity.RegisterActivity
+import com.example.someproject.activity.RentsActivity
 import com.example.someproject.ui.theme.SomeProjectTheme
 
 class MainActivity : ComponentActivity() {
@@ -63,6 +64,13 @@ class MainActivity : ComponentActivity() {
                 startActivity(intent)
             }) {
                 Text("Go to Cars Activity")
+            }
+
+            Button(onClick = {
+                val intent = Intent(this@MainActivity, RentsActivity::class.java)
+                startActivity(intent)
+            }) {
+                Text("Go to Rents Activity")
             }
         }
     }

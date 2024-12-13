@@ -1,6 +1,7 @@
 package com.example.someproject.activity
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -112,15 +113,14 @@ class CarDetailsActivity : ComponentActivity() {
     }
 
     private fun rentCar(car: Car) {
-        val sharedPreferences = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
-        val token = sharedPreferences.getString("jwt_token", null)
-
         val request = RentRequest(car._id)
-        apiService.rentCar(request, token).enqueue(object : Callback<RentResponse> {
+        apiService.rentCar(request).enqueue(object : Callback<RentResponse> {
             override fun onResponse(call: Call<RentResponse>, response: Response<RentResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let { rentResponse ->
                         Toast.makeText(this@CarDetailsActivity, rentResponse.message, Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this@CarDetailsActivity, RentsActivity::class.java)
+                        startActivity(intent)
                     }
                 } else {
                     val errorMessage = response.errorBody()?.string() ?: "Failed to rent car"

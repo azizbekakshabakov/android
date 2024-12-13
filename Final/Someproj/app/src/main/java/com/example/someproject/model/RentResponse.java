@@ -5,13 +5,11 @@ public class RentResponse {
     private String message;
     private String status;
 
-    // Constructor
     public RentResponse(String message, String status) {
         this.message = message;
         this.status = status;
     }
 
-    // Getters and Setters
     public String getMessage() {
         return message;
     }
