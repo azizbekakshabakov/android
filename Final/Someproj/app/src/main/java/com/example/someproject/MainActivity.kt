@@ -81,7 +81,9 @@ class MainActivity : ComponentActivity() {
                 }
             },
             bottomBar = {
-                NavigationBar  {
+                NavigationBar (
+                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
+                ) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
                             icon = { Text(text = "Cars") },

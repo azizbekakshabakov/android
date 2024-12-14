@@ -96,7 +96,7 @@ class RentsActivity : ComponentActivity() {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 56.dp)
                 ) {
                     items(rents) { rent ->
                         val car = cars.find { it._id == rent.carId } // Match car to rent
@@ -107,7 +107,9 @@ class RentsActivity : ComponentActivity() {
                 }
             },
             bottomBar = {
-                NavigationBar  {
+                NavigationBar (
+                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
+                ) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
                             icon = { Text(text = "Cars") },

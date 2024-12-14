@@ -29,6 +29,7 @@
         <activity android:name=".activity.CarsActivity"/>
         <activity android:name=".activity.CarDetailsActivity"/>
         <activity android:name=".activity.RentsActivity"/>
+        <activity android:name=".activity.BalanceActivity"/>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

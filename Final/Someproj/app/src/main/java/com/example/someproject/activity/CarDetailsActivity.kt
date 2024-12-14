@@ -4,17 +4,20 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
+import com.example.someproject.model.BalanceResponse
 import com.example.someproject.service.ApiClient
 import com.example.someproject.service.ApiService
 import com.example.someproject.model.Car
@@ -37,6 +41,9 @@ class CarDetailsActivity : ComponentActivity() {
     private lateinit var apiService: ApiService
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var carId: String
+
+    private var car: Car? = null
+    private var balance: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,16 +64,19 @@ class CarDetailsActivity : ComponentActivity() {
         apiService.getCar(carId).enqueue(object : Callback<Car> {
             override fun onResponse(call: Call<Car>, response: Response<Car>) {
                 if (response.isSuccessful) {
-                    val car = response.body()
+                    car = response.body()
 
-                    car?.let {
-                        // If car details are found, display using Compose
-                        setContent {
-                            CarDetailsScreen(car = it)
-                        }
-                    } ?: run {
-                        Toast.makeText(this@CarDetailsActivity, "Car details not found", Toast.LENGTH_SHORT).show()
+                    setContent {
+                        CarDetailsScreen(car, balance)
                     }
+//                    car?.let {
+//                        // If car details are found, display using Compose
+//                        setContent {
+//                            CarDetailsScreen(car = it, balance)
+//                        }
+//                    } ?: run {
+//                        Toast.makeText(this@CarDetailsActivity, "Car details not found", Toast.LENGTH_SHORT).show()
+//                    }
                 } else {
                     Toast.makeText(this@CarDetailsActivity, "Failed to fetch car details", Toast.LENGTH_SHORT).show()
                 }
@@ -76,15 +86,39 @@ class CarDetailsActivity : ComponentActivity() {
                 Toast.makeText(this@CarDetailsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+
+        apiService.getBalance()
+            .enqueue(object : Callback<BalanceResponse> {
+                override fun onResponse(call: Call<BalanceResponse>, response: Response<BalanceResponse>) {
+                    if (response.isSuccessful) {
+                        balance = response.body()?.balance ?: 0.0
+                        setContent {
+                            CarDetailsScreen(car, balance)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
+                    Log.e("CarsActivity", "Error fetching balance: ${t.message}")
+                }
+            })
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
-    fun CarDetailsScreen(car: Car? = null) {
+    fun CarDetailsScreen(car: Car? = null, balance: Double = 0.0) {
         val jwtTokenExists = remember { mutableStateOf(sharedPreferences.contains("jwt_token")) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text("Cars details - Balance: $$balance")
+                    }
+                )
+            },
             content = {
                 Column(
                     modifier = Modifier
@@ -131,7 +165,9 @@ class CarDetailsActivity : ComponentActivity() {
                 }
             },
             bottomBar = {
-                NavigationBar  {
+                NavigationBar (
+                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
+                )  {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
                             icon = { Text(text = "Cars") },

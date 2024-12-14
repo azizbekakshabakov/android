@@ -49,8 +49,8 @@ public interface ApiService {
     Call<ResponseBody> removeRent(@Path("id") String rentId);
 
     @POST("/rent/balance")
-    Call<Response> addBalance(@Body BalanceRequest request);
+    Call<BalanceResponse> addBalance(@Body BalanceRequest request);
 
     @GET("/rent/balance")
-    Call<BalanceResponse> getBalance(@Header("Authorization") String token);
+    Call<BalanceResponse> getBalance();
 }

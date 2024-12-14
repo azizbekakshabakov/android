@@ -12,19 +12,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
+import com.example.someproject.model.BalanceResponse
 import com.example.someproject.service.ApiClient
 import com.example.someproject.service.ApiService
 import com.example.someproject.model.Car
@@ -37,6 +31,9 @@ class CarsActivity : ComponentActivity() {
     private lateinit var apiService: ApiService
     private lateinit var sharedPreferences: SharedPreferences
 
+    private var carList: List<Car> = emptyList()
+    private var balance: Double = 0.0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -48,19 +45,16 @@ class CarsActivity : ComponentActivity() {
 
         // Fetch the cars from the API
         fetchCars()
+        setContent {
+            CarsScreen()
+        }
     }
 
     private fun fetchCars() {
         apiService.getCars().enqueue(object : Callback<List<Car>> {
             override fun onResponse(call: Call<List<Car>>, response: Response<List<Car>>) {
                 if (response.isSuccessful) {
-                    val carList = response.body() ?: emptyList()
-                    // Call Compose function to display cars
-                    setContent {
-                        CarsScreen(cars = carList)
-                    }
-                } else {
-                    Toast.makeText(this@CarsActivity, "Failed to load cars", Toast.LENGTH_SHORT).show()
+                    carList = response.body() ?: emptyList()
                 }
             }
 
@@ -68,20 +62,42 @@ class CarsActivity : ComponentActivity() {
                 Toast.makeText(this@CarsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+
+        apiService.getBalance()
+            .enqueue(object : Callback<BalanceResponse> {
+                override fun onResponse(call: Call<BalanceResponse>, response: Response<BalanceResponse>) {
+                    if (response.isSuccessful) {
+                        balance = response.body()?.balance ?: 0.0
+                        setContent {
+                            CarsScreen(cars = carList, balance = balance)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
+                    Log.e("CarsActivity", "Error fetching balance: ${t.message}")
+                }
+            })
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
-    fun CarsScreen(cars: List<Car> = emptyList()) {
+    fun CarsScreen(cars: List<Car> = emptyList(), balance: Double = 0.0) {
         val jwtTokenExists = remember { mutableStateOf(sharedPreferences.contains("jwt_token")) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text("Cars Activity - Balance: $$balance")
+                    }
+                )
+            },
             content = {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 56.dp)/////////////////////////////////
+                    modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 65.dp, bottom = 56.dp)
                 ) {
                     items(cars) { car ->
                         CarItem(car)
@@ -89,8 +105,8 @@ class CarsActivity : ComponentActivity() {
                 }
             },
             bottomBar = {
-                NavigationBar (
-                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
+                NavigationBar(
+                    modifier = Modifier.height(56.dp)
                 ) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
@@ -107,6 +123,15 @@ class CarsActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@CarsActivity, RentsActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Balance") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@CarsActivity, BalanceActivity::class.java))
                                 finishAffinity()
                             }
                         )
@@ -151,17 +176,12 @@ class CarsActivity : ComponentActivity() {
     @Composable
     fun CarItem(car: Car) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Load the image with Glide
-            val carImage = rememberImagePainter("http://10.0.2.2:3000/${car.image}")
-
             // Display the car image
             Image(
-                painter = carImage,
+                painter = rememberImagePainter("http://10.0.2.2:3000/${car.image}"),
                 contentDescription = "Car Image",
                 modifier = Modifier
                     .height(150.dp)
