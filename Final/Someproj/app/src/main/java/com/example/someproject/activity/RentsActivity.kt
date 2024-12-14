@@ -18,11 +18,13 @@ import androidx.compose.foundation.text.BasicText
 //import androidx.compose.foundation.text.Text
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.someproject.model.BalanceResponse
 import com.example.someproject.model.Car
 import com.example.someproject.model.Rent
 import com.example.someproject.model.RentGetResponse
@@ -45,6 +48,10 @@ class RentsActivity : ComponentActivity() {
     private lateinit var apiService: ApiService
     private lateinit var token: String
     private lateinit var sharedPreferences: SharedPreferences
+
+    private var rents: List<Rent> = emptyList()
+    private var cars: List<Car> = emptyList()
+    private var balance: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,35 +75,57 @@ class RentsActivity : ComponentActivity() {
             override fun onResponse(call: Call<RentGetResponse>, response: Response<RentGetResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let { rentGetResponse ->
-                        // Display rents and cars data using Compose
+                        rents = rentGetResponse.rents
+                        cars = rentGetResponse.cars
                         setContent {
-                            RentsScreen(rents = rentGetResponse.rents, cars = rentGetResponse.cars)
+                            RentsScreen(rents, cars, balance)
                         }
                     }
-                } else {
-                    Toast.makeText(this@RentsActivity, "Failed to fetch rents", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<RentGetResponse>, t: Throwable) {
-                Log.e("Failed", t.message ?: "Unknown error")
-                Toast.makeText(this@RentsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@RentsActivity, "${t.message}", Toast.LENGTH_LONG).show()
             }
         })
+
+        apiService.getBalance()
+            .enqueue(object : Callback<BalanceResponse> {
+                override fun onResponse(call: Call<BalanceResponse>, response: Response<BalanceResponse>) {
+                    if (response.isSuccessful) {
+                        balance = response.body()?.balance ?: 0.0
+                        setContent {
+                            RentsScreen(rents, cars, balance)
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
+                    Log.e("CarsActivity", "Error fetching balance: ${t.message}")
+                }
+            })
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
-    fun RentsScreen(rents: List<Rent> = emptyList(), cars: List<Car> = emptyList()) {
+    fun RentsScreen(rents: List<Rent> = emptyList(), cars: List<Car> = emptyList(), balance: Double = 0.0) {
         val jwtTokenExists = remember { mutableStateOf(sharedPreferences.contains("jwt_token")) }
 
         Scaffold(
             modifier = Modifier.fillMaxSize(),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text("Cars Activity - Balance: $$balance")
+                    }
+                )
+            },
             content = {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 56.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 65.dp, bottom = 56.dp)
                 ) {
                     items(rents) { rent ->
                         val car = cars.find { it._id == rent.carId } // Match car to rent
@@ -125,6 +154,15 @@ class RentsActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RentsActivity, RentsActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Баланс") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@RentsActivity, BalanceActivity::class.java))
                                 finishAffinity()
                             }
                         )

@@ -69,16 +69,6 @@ class CarDetailsActivity : ComponentActivity() {
                     setContent {
                         CarDetailsScreen(car, balance)
                     }
-//                    car?.let {
-//                        // If car details are found, display using Compose
-//                        setContent {
-//                            CarDetailsScreen(car = it, balance)
-//                        }
-//                    } ?: run {
-//                        Toast.makeText(this@CarDetailsActivity, "Car details not found", Toast.LENGTH_SHORT).show()
-//                    }
-                } else {
-                    Toast.makeText(this@CarDetailsActivity, "Failed to fetch car details", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -92,6 +82,7 @@ class CarDetailsActivity : ComponentActivity() {
                 override fun onResponse(call: Call<BalanceResponse>, response: Response<BalanceResponse>) {
                     if (response.isSuccessful) {
                         balance = response.body()?.balance ?: 0.0
+
                         setContent {
                             CarDetailsScreen(car, balance)
                         }

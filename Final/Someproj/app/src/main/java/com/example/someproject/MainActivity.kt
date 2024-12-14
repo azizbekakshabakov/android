@@ -18,6 +18,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBar
 //import androidx.compose.material3.BottomNavigationItem
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,11 +26,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.someproject.activity.BalanceActivity
 import com.example.someproject.activity.CarsActivity
 import com.example.someproject.activity.LoginActivity
 import com.example.someproject.activity.RegisterActivity
@@ -54,13 +57,6 @@ class MainActivity : ComponentActivity() {
     fun MainScreen() {
         val jwtTokenExists = remember { mutableStateOf(sharedPreferences.contains("jwt_token")) }
 
-        val items = listOf(
-            "Register" to RegisterActivity::class.java,
-            "Login" to LoginActivity::class.java,
-            "Cars" to CarsActivity::class.java,
-            "Rents" to RentsActivity::class.java
-        )
-
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             content = {
@@ -69,24 +65,18 @@ class MainActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Welcome to the Main Activity!")
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    items.forEach { (title, targetActivity) ->
-                        Button(onClick = { startActivity(Intent(this@MainActivity, targetActivity)) }) {
-                            Text("Go to $title Activity")
-                        }
-                    }
+                    Text(
+                        text = "Аренда авто",
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             },
             bottomBar = {
-                NavigationBar (
-                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
-                ) {
+                NavigationBar (modifier = Modifier.height(56.dp)) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
-                            icon = { Text(text = "Cars") },
+                            icon = { Text(text = "Авто") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, CarsActivity::class.java))
@@ -95,7 +85,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Rents") },
+                            icon = { Text(text = "Мои ренты") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, RentsActivity::class.java))
@@ -104,7 +94,16 @@ class MainActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Logout") },
+                            icon = { Text(text = "Баланс") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@MainActivity, BalanceActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Выйти") },
                             selected = false,
                             onClick = {
                                 val editor = sharedPreferences.edit()
@@ -118,7 +117,7 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         NavigationBarItem(
-                            icon = { Text(text = "Register") },
+                            icon = { Text(text = "Регистрация") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, RegisterActivity::class.java))
@@ -127,7 +126,7 @@ class MainActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Login") },
+                            icon = { Text(text = "Войти") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, LoginActivity::class.java))
@@ -138,13 +137,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SomeProjectTheme {
-//        Greeting("Android")
     }
 }

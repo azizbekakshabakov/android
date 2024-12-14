@@ -26,4 +26,11 @@ public class Rent {
         this.userId = userId;
     }
 
+    @Override
+    public String toString() {
+        return "Rent{" +
+                "carId='" + carId + '\'' +
+                ", userId='" + userId + '\'' +
+                '}';
+    }
 }

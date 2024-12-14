@@ -55,6 +55,9 @@ class CarsActivity : ComponentActivity() {
             override fun onResponse(call: Call<List<Car>>, response: Response<List<Car>>) {
                 if (response.isSuccessful) {
                     carList = response.body() ?: emptyList()
+                    setContent {
+                        CarsScreen(cars = carList, balance = balance)
+                    }
                 }
             }
 
