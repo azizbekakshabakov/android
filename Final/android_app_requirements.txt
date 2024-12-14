@@ -1,4 +1,3 @@
-I need an android studio app that takes these backend routes:
 router.get("/car/", async (req, res) => {
   const cars = await Car.find();
   res.status(200).send({ data: cars });
@@ -129,7 +128,6 @@ router.post('/rent/balance', authUserMiddleware, async (req, res) => {
 });
 
 
-I need the following pages:
 login, register for user
 page with all cars
 page that shows one car and allows to rent it
@@ -203,6 +201,3 @@ const validate = (usercar) => {
 const Usercar = mongoose.model("usercar", usercarSchema);
 
 module.exports = { Usercar, validate };
-
-
-IMPLEMENT EVERYTHING
