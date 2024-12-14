@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -27,10 +28,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.someproject.model.BalanceRequest
 import com.example.someproject.model.BalanceResponse
-import com.example.someproject.model.Car
 import com.example.someproject.service.ApiClient
 import com.example.someproject.service.ApiService
 import retrofit2.Call
@@ -41,7 +42,6 @@ class BalanceActivity : ComponentActivity() {
     private lateinit var apiService: ApiService
     private lateinit var sharedPreferences: SharedPreferences
 
-//    private var newBalance: Double = 0.0
     private var balance: Double = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +69,7 @@ class BalanceActivity : ComponentActivity() {
                 }
 
                 override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
-                    Log.e("CarsActivity", "Error fetching balance: ${t.message}")
+                    Log.e("BalanceActivity", "${t.message}")
                 }
             })
     }
@@ -86,7 +86,7 @@ class BalanceActivity : ComponentActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text("Cars Activity - Balance: $$balance")
+                        Text("Текущий баланс : $$balance")
                     }
                 )
             },
@@ -96,14 +96,17 @@ class BalanceActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Add Balance")
+                    Text(
+                        text = "Добавить на счет",
+                        style = MaterialTheme.typography.titleLarge,
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     OutlinedTextField(
                         value = balanceInput.value,
                         onValueChange = { balanceInput.value = it },
-                        label = { Text("Enter Amount") },
+                        label = { Text("Количество") },
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -192,15 +195,13 @@ class BalanceActivity : ComponentActivity() {
         apiService.addBalance(request).enqueue(object : Callback<BalanceResponse> {
             override fun onResponse(call: Call<BalanceResponse>, response: Response<BalanceResponse>) {
                 if (response.isSuccessful) {
-                    Toast.makeText(this@BalanceActivity, "Balance added successfully!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@BalanceActivity, "Счет пополнен", Toast.LENGTH_LONG).show()
                     fetchBalance()
-                } else {
-                    Toast.makeText(this@BalanceActivity, "Failed to add balance", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
-                Toast.makeText(this@BalanceActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.println(Log.ERROR, "BalanceFunc", "${t.message}")
             }
         })
 

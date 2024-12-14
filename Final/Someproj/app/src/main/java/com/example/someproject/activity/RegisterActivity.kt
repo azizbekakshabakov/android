@@ -82,25 +82,17 @@ class RegisterActivity : ComponentActivity() {
                         if (email.value.isNotEmpty() && password.value.isNotEmpty()) {
 
                             registerUser(email.value, password.value)
-                        } else {
-                            Toast.makeText(
-                                this@RegisterActivity,
-                                "Please fill all fields",
-                                Toast.LENGTH_SHORT
-                            ).show()
                         }
                     }) {
-                        Text("Register")
+                        Text("Зарегситрироваться")
                     }
                 }
             },
             bottomBar = {
-                NavigationBar (
-                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
-                ) {
+                NavigationBar ( modifier = Modifier.height(56.dp) ) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
-                            icon = { Text(text = "Cars") },
+                            icon = { Text(text = "Авто") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, CarsActivity::class.java))
@@ -109,7 +101,7 @@ class RegisterActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Rents") },
+                            icon = { Text(text = "Ренты") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, RentsActivity::class.java))
@@ -118,7 +110,7 @@ class RegisterActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Logout") },
+                            icon = { Text(text = "Выйти") },
                             selected = false,
                             onClick = {
                                 val editor = sharedPreferences.edit()
@@ -132,7 +124,7 @@ class RegisterActivity : ComponentActivity() {
                         )
                     } else {
                         NavigationBarItem(
-                            icon = { Text(text = "Register") },
+                            icon = { Text(text = "Регистрация") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, RegisterActivity::class.java))
@@ -141,7 +133,7 @@ class RegisterActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Login") },
+                            icon = { Text(text = "Войти") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
@@ -154,7 +146,7 @@ class RegisterActivity : ComponentActivity() {
         )
     }
 
-    // Function to register the user via Retrofit
+    // вызов функции регистрации через ретрофит
     private fun registerUser(email: String, password: String) {
         val registerRequest = RegisterRequest(email, password, "user")
 
@@ -163,17 +155,13 @@ class RegisterActivity : ComponentActivity() {
             .enqueue(object : Callback<RegisterResponse> {
                 override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
                     if (response.isSuccessful && response.body() != null) {
-                        val registerResponse = response.body()
-                        Toast.makeText(this@RegisterActivity, "Registration Successful", Toast.LENGTH_SHORT).show()
-                        finish()
-                    } else {
-                        Toast.makeText(this@RegisterActivity, "Registration Failed", Toast.LENGTH_SHORT).show()
-                        Log.println(Log.INFO, "taggg", "asdfasdfasdf")
+                        Toast.makeText(this@RegisterActivity, "Регистрация завершена", Toast.LENGTH_LONG).show()
+                        startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
+                        finishAffinity()
                     }
                 }
 
                 override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
-                    Toast.makeText(this@RegisterActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                     Log.println(Log.INFO, "taggg", "asdfasdfasdf ${t.message}")
                 }
             })

@@ -53,7 +53,7 @@ class CarDetailsActivity : ComponentActivity() {
 
         carId = intent.getStringExtra("carId") ?: ""
 
-        // Initialize the API service
+        // подключение апи сервис
         apiService = ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
         sharedPreferences = getSharedPreferences("myPrefs", MODE_PRIVATE)
 
@@ -73,7 +73,7 @@ class CarDetailsActivity : ComponentActivity() {
             }
 
             override fun onFailure(call: Call<Car>, t: Throwable) {
-                Toast.makeText(this@CarDetailsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.println(Log.ERROR, "CarDetailsActivity", "${t.message}")
             }
         })
 
@@ -90,7 +90,7 @@ class CarDetailsActivity : ComponentActivity() {
                 }
 
                 override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
-                    Log.e("CarsActivity", "Error fetching balance: ${t.message}")
+                    Log.e("CarDetailsActivity", "${t.message}")
                 }
             })
     }
@@ -106,7 +106,7 @@ class CarDetailsActivity : ComponentActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text("Cars details - Balance: $$balance")
+                        Text("Детали авто - Balance: $$balance")
                     }
                 )
             },
@@ -117,26 +117,25 @@ class CarDetailsActivity : ComponentActivity() {
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Car name and tariff
+                    // если car не нул то
                     if (car != null) {
                         Text(
-                            text = "Name: ${car.name}, Tariff: ${car.tariff}$ / day",
+                            text = "Name: ${car.name}, Tariff: ${car.tariff}$ / день",
                             style = MaterialTheme.typography.bodyLarge,
                             color = Color.Black
                         )
 
-                        // Car image
+                        // изобр машины
                         val carImage = rememberImagePainter("http://10.0.2.2:3000/${car.image}")
                         Image(
                             painter = carImage,
-                            contentDescription = "Car Image",
+                            contentDescription = "Авто",
                             modifier = Modifier
                                 .height(200.dp)
                                 .fillMaxWidth()
                                 .padding(top = 16.dp)
                         )
 
-                        // Car description
                         Text(
                             text = "Description: ${car.description}",
                             style = MaterialTheme.typography.bodyMedium,
@@ -144,24 +143,22 @@ class CarDetailsActivity : ComponentActivity() {
                             color = Color.Gray
                         )
 
-                        // Rent button
+                        // арнеда
                         Button(
                             onClick = { rentCar(car) },
                             modifier = Modifier.padding(top = 24.dp)
                         ) {
-                            Text(text = "Rent")
+                            Text(text = "Арендовать")
                         }
 
                     }
                 }
             },
             bottomBar = {
-                NavigationBar (
-                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
-                )  {
+                NavigationBar ( modifier = Modifier.height(56.dp) )  {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
-                            icon = { Text(text = "Cars") },
+                            icon = { Text(text = "Авто") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@CarDetailsActivity, CarsActivity::class.java))
@@ -170,7 +167,7 @@ class CarDetailsActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Rents") },
+                            icon = { Text(text = "Аренды") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@CarDetailsActivity, RentsActivity::class.java))
@@ -179,7 +176,16 @@ class CarDetailsActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Logout") },
+                            icon = { Text(text = "Баланс") },
+                            selected = false,
+                            onClick = {
+                                startActivity(Intent(this@CarDetailsActivity, BalanceActivity::class.java))
+                                finishAffinity()
+                            }
+                        )
+
+                        NavigationBarItem(
+                            icon = { Text(text = "Выйти") },
                             selected = false,
                             onClick = {
                                 val editor = sharedPreferences.edit()
@@ -193,7 +199,7 @@ class CarDetailsActivity : ComponentActivity() {
                         )
                     } else {
                         NavigationBarItem(
-                            icon = { Text(text = "Register") },
+                            icon = { Text(text = "Регистрация") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@CarDetailsActivity, RegisterActivity::class.java))
@@ -202,7 +208,7 @@ class CarDetailsActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Login") },
+                            icon = { Text(text = "Войти") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@CarDetailsActivity, LoginActivity::class.java))
@@ -221,19 +227,17 @@ class CarDetailsActivity : ComponentActivity() {
             override fun onResponse(call: Call<RentResponse>, response: Response<RentResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let { rentResponse ->
-                        Toast.makeText(this@CarDetailsActivity, rentResponse.message, Toast.LENGTH_SHORT).show()
-                        // Navigate to the rents activity
+                        Toast.makeText(this@CarDetailsActivity, "Авто арендовано", Toast.LENGTH_LONG).show()
+                        // прееити на другие активити
                         val intent = Intent(this@CarDetailsActivity, RentsActivity::class.java)
                         startActivity(intent)
+                        finishAffinity()
                     }
-                } else {
-                    val errorMessage = response.errorBody()?.string() ?: "Failed to rent car"
-                    Toast.makeText(this@CarDetailsActivity, errorMessage, Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<RentResponse>, t: Throwable) {
-                Toast.makeText(this@CarDetailsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@CarDetailsActivity, "${t.message}", Toast.LENGTH_LONG).show()
             }
         })
     }

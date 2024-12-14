@@ -7,13 +7,11 @@ public class RentGetResponse {
     private List<Rent> rents;
     private List<Car> cars;
 
-    // Constructor
     public RentGetResponse(List<Rent> rents, List<Car> cars) {
         this.rents = rents;
         this.cars = cars;
     }
 
-    // Getters and setters
     public List<Rent> getRents() {
         return rents;
     }

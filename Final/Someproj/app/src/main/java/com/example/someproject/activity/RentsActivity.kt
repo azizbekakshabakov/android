@@ -13,10 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
-//import androidx.compose.foundation.text.Text
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +24,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -59,14 +54,13 @@ class RentsActivity : ComponentActivity() {
             RentsScreen()
         }
 
-        // Retrieve the JWT token from shared preferences
         sharedPreferences = getSharedPreferences("myPrefs", Context.MODE_PRIVATE)
         token = sharedPreferences.getString("jwt_token", null) ?: ""
 
-        // Initialize API service
+        // апи сервис для запросов на бэк
         apiService = ApiClient.getRetrofitInstance(this).create(ApiService::class.java)
 
-        // Fetch rents data
+        // достать данные о рентах
         fetchRents()
     }
 
@@ -85,7 +79,7 @@ class RentsActivity : ComponentActivity() {
             }
 
             override fun onFailure(call: Call<RentGetResponse>, t: Throwable) {
-                Toast.makeText(this@RentsActivity, "${t.message}", Toast.LENGTH_LONG).show()
+                Log.println(Log.ERROR, "RentsActivity", "${t.message}")
             }
         })
 
@@ -101,7 +95,7 @@ class RentsActivity : ComponentActivity() {
                 }
 
                 override fun onFailure(call: Call<BalanceResponse>, t: Throwable) {
-                    Log.e("CarsActivity", "Error fetching balance: ${t.message}")
+                    Log.println(Log.ERROR, "RentsActivity", "${t.message}")
                 }
             })
     }
@@ -117,7 +111,7 @@ class RentsActivity : ComponentActivity() {
             topBar = {
                 TopAppBar(
                     title = {
-                        Text("Cars Activity - Balance: $$balance")
+                        Text("Мои ренты - Баланс: $$balance")
                     }
                 )
             },
@@ -128,20 +122,18 @@ class RentsActivity : ComponentActivity() {
                         .padding(start = 16.dp, end = 16.dp, top = 65.dp, bottom = 56.dp)
                 ) {
                     items(rents) { rent ->
-                        val car = cars.find { it._id == rent.carId } // Match car to rent
+                        val car = cars.find { it._id == rent.carId } // найти соответствующее авто
 
-                        // Display car name and rent information
+                        // отобразить инфу о машине и ренте
                         RentItem(rent = rent, car = car)
                     }
                 }
             },
             bottomBar = {
-                NavigationBar (
-                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
-                ) {
+                NavigationBar ( modifier = Modifier.height(56.dp) ) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
-                            icon = { Text(text = "Cars") },
+                            icon = { Text(text = "Авто") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RentsActivity, CarsActivity::class.java))
@@ -150,7 +142,7 @@ class RentsActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Rents") },
+                            icon = { Text(text = "Аренды") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RentsActivity, RentsActivity::class.java))
@@ -168,7 +160,7 @@ class RentsActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Logout") },
+                            icon = { Text(text = "Выйти") },
                             selected = false,
                             onClick = {
                                 val editor = sharedPreferences.edit()
@@ -182,7 +174,7 @@ class RentsActivity : ComponentActivity() {
                         )
                     } else {
                         NavigationBarItem(
-                            icon = { Text(text = "Register") },
+                            icon = { Text(text = "Регистрация") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RentsActivity, RegisterActivity::class.java))
@@ -191,7 +183,7 @@ class RentsActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Login") },
+                            icon = { Text(text = "Войти") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RentsActivity, LoginActivity::class.java))
@@ -211,23 +203,24 @@ class RentsActivity : ComponentActivity() {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            // Car name
-            Text(
-                text = "Car: ${car?.name ?: "Unknown"}",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            // название машины
+            if (car != null) {
+                Text(
+                    text = "${car.name} - $${car.tariff}/день",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
 
-            // Rent deletion button
+            // удолить ренту
             Button(
                 onClick = { deleteRent(rent.carId) },
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
-                Text(text = "Delete Rent")
+                Text(text = "Удолить")
             }
 
-            // Separator
             Spacer(modifier = Modifier.height(2.dp))
             Box(
                 modifier = Modifier
@@ -242,16 +235,13 @@ class RentsActivity : ComponentActivity() {
         apiService.removeRent(carId).enqueue(object : Callback<ResponseBody> {
             override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
                 if (response.isSuccessful) {
-                    Toast.makeText(this@RentsActivity, "Rent deleted successfully", Toast.LENGTH_SHORT).show()
-                    fetchRents() // Refresh the list of rents
-                } else {
-                    val errorMessage = response.errorBody()?.string() ?: "Failed to delete rent"
-                    Toast.makeText(this@RentsActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RentsActivity, "Рента удолена", Toast.LENGTH_SHORT).show()
+                    fetchRents() // обновить список рент
                 }
             }
 
             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Toast.makeText(this@RentsActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                Log.println(Log.ERROR, "RentsActivity", "${t.message}")
             }
         })
     }

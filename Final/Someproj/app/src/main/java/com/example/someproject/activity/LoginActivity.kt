@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -42,7 +43,7 @@ class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize SharedPreferences
+        // доступ к sharedPref
         sharedPreferences = getSharedPreferences("myPrefs", MODE_PRIVATE)
 
         setContent {
@@ -55,7 +56,7 @@ class LoginActivity : ComponentActivity() {
     fun LoginScreen() {
         val jwtTokenExists = remember { mutableStateOf(sharedPreferences.contains("jwt_token")) }
 
-        // State variables to hold user input
+        // хранение введенных юзером данных
         var email = remember { mutableStateOf("") }
         var password = remember { mutableStateOf("") }
 
@@ -69,50 +70,42 @@ class LoginActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Email input field
+                    // логин
                     TextField(
                         value = email.value,
                         onValueChange = { email.value = it },
-                        label = { Text("Email") },
+                        label = { Text("Логин") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Password input field
+                    // пароль
                     TextField(
                         value = password.value,
                         onValueChange = { password.value = it },
-                        label = { Text("Password") },
+                        label = { Text("Пароль") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Login button
+                    // подтвердить
                     Button(onClick = {
                         if (email.value.isNotEmpty() && password.value.isNotEmpty()) {
-                            // Call the login function
+                            // функция логина
                             loginUser(email.value, password.value)
-                        } else {
-                            Toast.makeText(
-                                this@LoginActivity,
-                                "Please fill all fields",
-                                Toast.LENGTH_SHORT
-                            ).show()
                         }
                     }) {
-                        Text("Login")
+                        Text("Подтвердить")
                     }
                 }
             },
             bottomBar = {
-                NavigationBar  (
-                    modifier = Modifier.height(56.dp)////////////////////////////////////////////////
-                ) {
+                NavigationBar ( modifier = Modifier.height(56.dp) ) {
                     if (jwtTokenExists.value) {
                         NavigationBarItem(
-                            icon = { Text(text = "Cars") },
+                            icon = { Text(text = "Авто") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, CarsActivity::class.java))
@@ -121,7 +114,7 @@ class LoginActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Rents") },
+                            icon = { Text(text = "Ренты") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, RentsActivity::class.java))
@@ -130,7 +123,7 @@ class LoginActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Logout") },
+                            icon = { Text(text = "Выйти") },
                             selected = false,
                             onClick = {
                                 val editor = sharedPreferences.edit()
@@ -144,7 +137,7 @@ class LoginActivity : ComponentActivity() {
                         )
                     } else {
                         NavigationBarItem(
-                            icon = { Text(text = "Register") },
+                            icon = { Text(text = "Регистрация") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
@@ -153,7 +146,7 @@ class LoginActivity : ComponentActivity() {
                         )
 
                         NavigationBarItem(
-                            icon = { Text(text = "Login") },
+                            icon = { Text(text = "Войти") },
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, LoginActivity::class.java))
@@ -166,7 +159,7 @@ class LoginActivity : ComponentActivity() {
         )
     }
 
-    // Function to log the user in via Retrofit and save JWT token to SharedPreferences
+    // войти с помощью ретрофит и jwt токена из sharedPrefs
     private fun loginUser(email: String, password: String) {
         val loginRequest = LoginRequest(email, password)
 
@@ -175,35 +168,27 @@ class LoginActivity : ComponentActivity() {
             .enqueue(object : Callback<LoginResponse> {
                 override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                     if (response.isSuccessful && response.body() != null) {
-                        val loginResponse = response.body()!!
+                        val loginResponse = response.body()
 
-                        // Save the JWT token to SharedPreferences
-                        saveJwtToken(loginResponse.token)
+                        // сохранить jwt в sharedPrefs
+                        val editor = sharedPreferences.edit()
+                        if (loginResponse != null) {
+                            editor.putString("jwt_token", loginResponse.token)
+                        }
+                        editor.apply()
 
-                        // Navigate to the next activity (e.g., HomeActivity)
-                        navigateToHome()
-                    } else {
-                        Toast.makeText(this@LoginActivity, "Login Failed", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@LoginActivity, "Войден успешно", Toast.LENGTH_LONG).show()
+
+                        // перейти в CarsActivity
+                        val intent = Intent(this@LoginActivity, CarsActivity::class.java)
+                        startActivity(intent)
+                        finishAffinity()
                     }
                 }
 
                 override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                    Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    Log.println(Log.ERROR, "LoginActivity", "${t.message}")
                 }
             })
-    }
-
-    // Save the JWT token in SharedPreferences
-    private fun saveJwtToken(token: String) {
-        val editor = sharedPreferences.edit()
-        editor.putString("jwt_token", token)
-        editor.apply()
-    }
-
-    // Navigate to HomeActivity after successful login
-    private fun navigateToHome() {
-        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-        startActivity(intent)
-        finish() // Close the login activity
     }
 }
