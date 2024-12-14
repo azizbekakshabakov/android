@@ -70,6 +70,7 @@ class MainActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, CarsActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -79,6 +80,7 @@ class MainActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, RentsActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -88,6 +90,7 @@ class MainActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, BalanceActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -102,6 +105,7 @@ class MainActivity : ComponentActivity() {
                                 jwtTokenExists.value = false
 
                                 startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -111,6 +115,7 @@ class MainActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, RegisterActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -120,6 +125,7 @@ class MainActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )

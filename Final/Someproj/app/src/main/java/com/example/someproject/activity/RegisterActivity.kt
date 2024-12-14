@@ -96,6 +96,7 @@ class RegisterActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, CarsActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -105,6 +106,7 @@ class RegisterActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, RentsActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -119,6 +121,7 @@ class RegisterActivity : ComponentActivity() {
                                 jwtTokenExists.value = false
 
                                 startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -128,6 +131,7 @@ class RegisterActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, RegisterActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -137,6 +141,7 @@ class RegisterActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -157,6 +162,7 @@ class RegisterActivity : ComponentActivity() {
                     if (response.isSuccessful && response.body() != null) {
                         Toast.makeText(this@RegisterActivity, "Регистрация завершена", Toast.LENGTH_LONG).show()
                         startActivity(Intent(this@RegisterActivity, LoginActivity::class.java))
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         finishAffinity()
                     }
                 }

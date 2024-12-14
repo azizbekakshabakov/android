@@ -109,6 +109,7 @@ class LoginActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, CarsActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -118,6 +119,7 @@ class LoginActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, RentsActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -132,6 +134,7 @@ class LoginActivity : ComponentActivity() {
                                 jwtTokenExists.value = false
 
                                 startActivity(Intent(this@LoginActivity, LoginActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -141,6 +144,7 @@ class LoginActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, RegisterActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -150,6 +154,7 @@ class LoginActivity : ComponentActivity() {
                             selected = false,
                             onClick = {
                                 startActivity(Intent(this@LoginActivity, LoginActivity::class.java))
+                                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                                 finishAffinity()
                             }
                         )
@@ -182,6 +187,7 @@ class LoginActivity : ComponentActivity() {
                         // перейти в CarsActivity
                         val intent = Intent(this@LoginActivity, CarsActivity::class.java)
                         startActivity(intent)
+                        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                         finishAffinity()
                     }
                 }
